@@ -1,27 +1,33 @@
 import { useState } from "react";
-import { Expense } from "../types/expense";
+import api from "../api/axios";
 
 interface Props {
-  onAddExpense: (expense: Expense) => void;
+  fetchExpenses: () => void;
 }
 
-const ExpenseForm = ({ onAddExpense }: Props) => {
+const ExpenseForm = ({ fetchExpenses }: Props) => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState<number>(0);
   const [category, setCategory] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title || !amount || !category) return;
 
-    onAddExpense({
-      id: crypto.randomUUID(),
+    const newExpense = {
       title,
       amount,
       category,
       date: new Date().toISOString(),
-    });
+    };
+
+    try {
+      await api.post("/expenses", newExpense);
+      fetchExpenses(); // refresh list
+    } catch (error) {
+      console.error("Error adding expense:", error);
+    }
 
     setTitle("");
     setAmount(0);
